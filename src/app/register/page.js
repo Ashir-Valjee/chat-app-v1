@@ -91,11 +91,9 @@ export default function RegisterPage() {
 
           {/* dispay avatar */}
           <div className="flex items-center space-y-2 justify-between border border-gray-200 p-2">
-            <Image
+            <img
               src={avatarUrl}
               className="rounded-full h-20 w-20"
-              height={20}
-              width={20}
               alt="avatar"
             />
             <button

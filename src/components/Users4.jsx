@@ -11,17 +11,22 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-export default function Users({ userData }) {
+export default function Users4({ setSelectedChatroom }) {
   const [activeTab, setActiveTab] = useState("users");
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
+  const [loading3, setLoading3] = useState(true);
+  const [userUid, setUserUid] = useState(null);
 
-  const [users, setUsers] = useState([]);
-  const [userChatRooms, setUserChatRooms] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [userData2, setUserData2] = useState(null);
+
+  const [chatrooms, setChatrooms] = useState([]);
+  const [error, setError] = useState(null);
 
   const auth = getAuth(app);
   const router = useRouter();
@@ -30,22 +35,65 @@ export default function Users({ userData }) {
     setActiveTab(tab);
   }
 
-  // get all users
+  //   get loggon on user UID
   useEffect(() => {
-    setLoading(true);
-    const taskQuery = query(collection(firestore, "users"));
-
-    const unsubscribe = onSnapshot(taskQuery, (querySnapshot) => {
-      const users = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setUsers(users);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserUid(user.uid);
+      } else {
+        setUserUid(null);
+        setUserData2(null);
+        setLoading(false);
+      }
     });
-    return unsubscribe;
-  }, []);
+    return () => unsubscribe();
+  }, [auth]);
 
+  //   get logged on user data
+  useEffect(() => {
+    if (userUid) {
+      const fetchUserData = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch(`/api/user?id=${userUid}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+          const data = await response.json();
+          setUserData2(data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setError("Failed to fetch user data");
+        }
+        setLoading(false);
+      };
+
+      fetchUserData();
+    }
+  }, [userUid]);
+
+  // Fetch all users
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      setLoading2(true);
+      try {
+        const response = await fetch("/api/users"); // Ensure the API route matches your setup
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        setAllUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setError("Failed to fetch users");
+      }
+      setLoading2(false);
+    };
+
+    fetchAllUsers();
+  }, []);
+  console.log("all the users are", allUsers);
+  //   logout function
   async function handleLogout() {
     try {
       await signOut(auth);
@@ -55,33 +103,36 @@ export default function Users({ userData }) {
       toast.error(err.message);
     }
   }
-  // get users chatrooms
 
+  //   get all chatrooms
   useEffect(() => {
-    setLoading2(true);
-    if (!userData?.id) {
-      return;
+    if (userUid) {
+      const fetchUserChatrooms = async () => {
+        setLoading3(true);
+        try {
+          const response = await fetch(`/api/chatrooms?id=${userUid}`); //
+          if (!response.ok) {
+            throw new Error("Failed to fetch chatrooms");
+          }
+          const data = await response.json();
+          setChatrooms(data);
+        } catch (error) {
+          console.error("Error fetching chatrooms:", error);
+          setError("Failed to fetch chatrooms");
+        }
+        setLoading3(false);
+      };
+
+      fetchUserChatrooms();
     }
-    const chatroomsQuery = query(
-      collection(firestore, "chatrooms"),
-      where("users", "array-contains", userData.id)
-    );
-    const unsubscribeChatrooms = onSnapshot(chatroomsQuery, (querySnapshot) => {
-      const chatrooms = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setUserChatRooms(chatrooms);
-      setLoading2(false);
-    });
-    return () => unsubscribeChatrooms();
-  }, []);
+  }, [userUid]);
+  console.log("chatrooms are", chatrooms);
 
   async function createChat(user) {
     // check if chatroom already exists
     const existingChatRoom = query(
       collection(firestore, "chatrooms"),
-      where("users", "==", [user.id, userData.id])
+      where("users", "==", [user.id, userUid])
     );
     try {
       const existingChatroomSnapshot = await getDocs(existingChatRoom);
@@ -91,11 +142,11 @@ export default function Users({ userData }) {
       }
       // chatroom does not exist, create one!
       const usersData = {
-        [userData.id]: userData,
+        [userUid]: userData2,
         [user.id]: user,
       };
       const chatRoomData = {
-        users: [user.id, userData.id],
+        users: [user.id, userUid],
         usersData,
         timestamp: serverTimestamp(),
         lastMessage: null,
@@ -112,8 +163,19 @@ export default function Users({ userData }) {
     }
   }
 
-  console.log(users);
-  console.log("user data is indeed", userData);
+  console.log(allUsers);
+  console.log("user data is indeed", userData2);
+
+  //   open chat handler
+  function openChat(chatroom) {
+    const data = {
+      id: chatroom.id,
+      myData: userData2,
+      otherData:
+        chatroom.usersData[chatroom.users.find((id) => id !== userUid)],
+    };
+    setSelectedChatroom(data);
+  }
 
   return (
     <>
@@ -140,26 +202,27 @@ export default function Users({ userData }) {
             Log Out
           </button>
         </div>
+        {/* render chatrooms */}
         <div>
           {activeTab === "Chatrooms" && (
             <>
               <h1 className="px-4 text-base font-semibold">Chat Rooms</h1>
-              {userChatRooms.map((chatroom) => (
+              {chatrooms.map((chatroom) => (
                 <div
                   onClick={() => {
-                    createChat(chatroom);
+                    openChat(chatroom);
                   }}
                   key={chatroom.id}
                 >
                   <UserCard
                     name={
                       chatroom.usersData[
-                        chatroom.users.find((id) => id !== userData?.id)
+                        chatroom.users.find((id) => id !== userUid)
                       ].name
                     }
                     avatarUrl={
                       chatroom.usersData[
-                        chatroom.users.find((id) => id !== userData?.id)
+                        chatroom.users.find((id) => id !== userUid)
                       ].avatarUrl
                     }
                     latestMessageText={chatroom.lastMessage}
@@ -171,16 +234,17 @@ export default function Users({ userData }) {
             </>
           )}
         </div>
+        {/* render users */}
         <div>
           {activeTab === "users" && (
             <>
               <h1 className="px-4 text-base font-semibold">Users</h1>
-              {loading ? (
+              {loading2 ? (
                 <p>Loading...</p>
               ) : (
-                users.map(
+                allUsers.map(
                   (user) =>
-                    user.id !== userData.id && (
+                    user.id !== userUid && (
                       <div
                         onClick={() => {
                           createChat(user);

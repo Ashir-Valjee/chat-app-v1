@@ -1,7 +1,26 @@
 import MessageCard from "./MessageCard";
 import MessageInput from "./Messageinput";
+import { useState, useEffect, useRef } from "react";
+import { firestore } from "@/lib/firebase";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
+  updateDoc,
+} from "firebase/firestore";
 
-export default function ChatRoom({ user }) {
+export default function ChatRoom({ user, selectedChatroom }) {
+  const me = selectedChatroom?.myData;
+  const other = selectedChatroom?.otherData;
+  const chatRoomId = selectedChatroom?.id;
+
+  const [message, setMessage] = useState("");
+
+  console.log("from chatroom", selectedChatroom);
   const messages = [
     {
       id: 1,
