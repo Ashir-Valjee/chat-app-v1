@@ -15,7 +15,7 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-export default function Users4({ setSelectedChatroom }) {
+export default function Users4({ userData, setSelectedChatroom }) {
   const [activeTab, setActiveTab] = useState("users");
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
@@ -24,6 +24,7 @@ export default function Users4({ setSelectedChatroom }) {
 
   const [allUsers, setAllUsers] = useState([]);
   const [userData2, setUserData2] = useState(null);
+  const [userData3, setUserData3] = useState(null);
 
   const [chatrooms, setChatrooms] = useState([]);
   const [error, setError] = useState(null);
@@ -66,6 +67,27 @@ export default function Users4({ setSelectedChatroom }) {
           setError("Failed to fetch user data");
         }
         setLoading(false);
+      };
+
+      fetchUserData();
+    }
+  }, [userUid]);
+
+  //   get user data in right format
+  useEffect(() => {
+    if (userUid) {
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch(`/api/userData?id=${userUid}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+          const data = await response.json();
+          setUserData3(data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setError("Failed to fetch user data");
+        }
       };
 
       fetchUserData();
@@ -170,12 +192,14 @@ export default function Users4({ setSelectedChatroom }) {
   function openChat(chatroom) {
     const data = {
       id: chatroom.id,
-      myData: userData2,
+      myData: userData3,
       otherData:
         chatroom.usersData[chatroom.users.find((id) => id !== userUid)],
     };
     setSelectedChatroom(data);
   }
+
+  console.log("omg omg omg", userData3);
 
   return (
     <>

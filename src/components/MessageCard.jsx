@@ -1,6 +1,12 @@
+import moment from "moment";
 import Image from "next/image";
-export default function MessageCard({ message, user }) {
-  const isMessageFromMe = message.sender === user;
+export default function MessageCard({ message, me, other }) {
+  const isMessageFromMe = message.senderId === me.id;
+  function timeAgo(time) {
+    const date = time?.toDate();
+    const momentDate = moment(date);
+    return momentDate.fromNow();
+  }
   return (
     <>
       <div
@@ -12,13 +18,24 @@ export default function MessageCard({ message, user }) {
         {/* avatar on th eleft */}
 
         <div className={`w-10 h-10 ${isMessageFromMe ? "ml-2 mr-2" : "mr-2"}`}>
-          <Image
-            src={message.avatarUrl}
-            alt="avatar"
-            width={10}
-            height={10}
-            className="w-full h-full rounded-full object-cover"
-          />
+          {!isMessageFromMe && (
+            <Image
+              src={other.avatarUrl}
+              alt="avatar"
+              width={10}
+              height={10}
+              className="w-full h-full rounded-full object-cover"
+            />
+          )}
+          {isMessageFromMe && (
+            <Image
+              src={me.avatarUrl}
+              alt="avatar"
+              width={10}
+              height={10}
+              className="w-full h-full rounded-full object-cover"
+            />
+          )}
         </div>
         {/* message bubble */}
         <div
@@ -27,7 +44,7 @@ export default function MessageCard({ message, user }) {
           }`}
         >
           <p>{message.content}</p>
-          <div className="text-xs text-gray-300">{message.time}</div>
+          <div className="text-xs text-gray-300">{timeAgo(message.time)}</div>
         </div>
       </div>
     </>

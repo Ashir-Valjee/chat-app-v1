@@ -29,7 +29,7 @@ export default function Home() {
     });
     return () => unsubscribe();
   }, [auth, router]);
-  // console.log("user is", user);
+  console.log("user is", user);
   return (
     <>
       <div className="flex h-screen">
