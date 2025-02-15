@@ -1,7 +1,7 @@
 "use client";
 import MessageCard from "./MessageCard";
 import MessageInput from "./Messageinput";
-import MessageInput2 from "./Messageinput2";
+
 import { useState, useEffect, useRef } from "react";
 import { firestore } from "@/lib/firebase";
 import {
@@ -117,7 +117,7 @@ export default function ChatRoom({ user, selectedChatroom }) {
         {/* message input */}
         <MessageInput
           sendMessage={sendMessage}
-          messae={message}
+          message={message}
           setMessage={setMessage}
           image={image}
           setImage={setImage}

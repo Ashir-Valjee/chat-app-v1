@@ -4,16 +4,18 @@ import { app, firestore } from "@/lib/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import Users from "@/components/Users";
-import Users2 from "@/components/Users2";
-import Users3 from "@/components/Users3";
+import Users from "@/components/unused/Users";
+import Users2 from "@/components/unused/Users2";
+import Users3 from "@/components/unused/Users3";
 import Users4 from "@/components/Users4";
 import ChatRoom from "@/components/ChatRoom";
+import Header from "@/components/Header";
 export default function Home() {
   const auth = getAuth(app);
   const [user, setUser] = useState(null);
   const router = useRouter();
   const [selectedChatroom, setSelectedChatroom] = useState();
+  const [showUsers, setShowUsers] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -30,10 +32,15 @@ export default function Home() {
     return () => unsubscribe();
   }, [auth, router]);
   console.log("user is", user);
+
+  const toggleUsers4Visibility = () => {
+    setShowUsers(!showUsers);
+  };
   return (
     <>
-      <div className="flex h-screen">
+      <div className="  flex h-screen flex-grow  ">
         {/* left */}
+
         <div className="flex-shrink-0 w-3/12">
           <Users4 userData={user} setSelectedChatroom={setSelectedChatroom} />
         </div>

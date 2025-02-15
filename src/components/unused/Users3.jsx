@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { app, firestore } from "@/lib/firebase"; // Ensure the path to your Firebase config is correct
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import UserCard from "./UserCard";
+import UserCard from "../UserCard";
 
 export default function Users3() {
   const auth = getAuth(app);

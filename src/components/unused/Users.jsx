@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import UserCard from "./UserCard";
-import { onAuthStateChanged } from "firebase/auth";
+import UserCard from "../UserCard";
 import { firestore, app } from "@/lib/firebase";
 import {
   collection,
@@ -15,15 +14,14 @@ import {
 import { getAuth, signOut } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
 
-export default function Users2({ userData }) {
+export default function Users({ userData }) {
   const [activeTab, setActiveTab] = useState("users");
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
+
   const [users, setUsers] = useState([]);
   const [userChatRooms, setUserChatRooms] = useState([]);
-  const [user, setUser] = useState(null);
 
   const auth = getAuth(app);
   const router = useRouter();
@@ -31,23 +29,6 @@ export default function Users2({ userData }) {
   function handleTabClick(tab) {
     setActiveTab(tab);
   }
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userRef = doc(firestore, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        const userData2 = { id: userSnap.id, ...userSnap.data() };
-        setUser(userData2);
-      } else {
-        setUser(null);
-        router.push("/login");
-      }
-    });
-    return () => unsubscribe();
-  }, [auth, router]);
-  console.log("bla bla");
-  console.log("user is", user);
 
   // get all users
   useEffect(() => {
@@ -78,12 +59,12 @@ export default function Users2({ userData }) {
 
   useEffect(() => {
     setLoading2(true);
-    // if (!user?.id) {
-    //   return;
-    // }
+    if (!userData?.id) {
+      return;
+    }
     const chatroomsQuery = query(
       collection(firestore, "chatrooms"),
-      where("users", "array-contains", "RBf57bzpYqS4490ShppWyYC67K13")
+      where("users", "array-contains", userData.id)
     );
     const unsubscribeChatrooms = onSnapshot(chatroomsQuery, (querySnapshot) => {
       const chatrooms = querySnapshot.docs.map((doc) => ({
@@ -133,9 +114,6 @@ export default function Users2({ userData }) {
 
   console.log(users);
   console.log("user data is indeed", userData);
-
-  //   console.log("bla bla");
-  //   console.log("user is", user);
 
   return (
     <>

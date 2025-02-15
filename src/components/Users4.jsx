@@ -203,11 +203,11 @@ export default function Users4({ userData, setSelectedChatroom }) {
 
   return (
     <>
-      <div className="shadow-lg h-screen overflow-auto mt-4 mb-20">
+      <div className="shadow-lg h-screen overflow-auto mb-20 ">
         <div className="flex justify-between p-4">
           <button
             onClick={() => handleTabClick("users")}
-            className={`btn btn-outline ${
+            className={`btn btn-secondary btn-sm ${
               activeTab === "users" ? "btn-primary" : ""
             }`}
           >
@@ -215,14 +215,14 @@ export default function Users4({ userData, setSelectedChatroom }) {
           </button>
           <button
             onClick={() => handleTabClick("Chatrooms")}
-            className={`btn btn-outline ${
+            className={`btn btn-primary btn-sm ${
               activeTab === "Chatrooms" ? "btn-primary" : ""
             }`}
           >
             Chatrooms
           </button>
           {/* log out button */}
-          <button onClick={handleLogout} className={`btn btn-outline `}>
+          <button onClick={handleLogout} className={`btn btn-warning btn-sm `}>
             Log Out
           </button>
         </div>

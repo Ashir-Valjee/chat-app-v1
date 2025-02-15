@@ -70,6 +70,16 @@ export default function MessageInput({
     setShowEmojiPicker(false);
   }
 
+  // send message on enter key
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevent the default form submission
+      // Handle the "Enter" key press here
+      console.log("Enter key pressed");
+      sendMessage();
+    }
+  };
+
   return (
     <>
       <div className="relative flex items-center p-4 border-t border-gray-200">
@@ -79,7 +89,7 @@ export default function MessageInput({
             document.getElementById("my_modal_3").showModal();
           }}
           className={`${
-            image ? "text-red-500" : "text-gray-500"
+            image ? "text-red-500" : "text-white"
           }  mr-2 cursor-pointer`}
         />
         {/* emoji picker */}
@@ -104,11 +114,12 @@ export default function MessageInput({
         <input
           type="text"
           placeholder="Type a message"
-          className="flex-1 border-none p-2 outline-none"
+          className="flex-1 border-none p-2 outline-none text-black"
           value={message}
           onChange={(e) => {
             setMessage(e.target.value);
           }}
+          onKeyDown={handleKeyDown}
         />
 
         {/* send messages */}
@@ -116,7 +127,7 @@ export default function MessageInput({
           onClick={() => {
             sendMessage();
           }}
-          className="text-gray-500 ml-2 cursor-pointer"
+          className="text-white ml-2 cursor-pointer"
         />
 
         <dialog id="my_modal_3" className="modal">

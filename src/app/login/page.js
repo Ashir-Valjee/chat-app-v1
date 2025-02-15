@@ -55,14 +55,13 @@ export default function LoginPage() {
 
   return (
     <>
-      <h1>register</h1>
       <div className="flex justify-center items-center h-screen p-10 m-2">
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 w-full max-w-2xl shadow-lg p-10"
+          className="space-y-4 w-full max-w-2xl shadow-lg p-10 bg-blue-100 text-black"
         >
           <h1 className="text-xl text-center font-semibold text-[#0b3a65ff]">
-            Chat<span className="font-bold text-[#eeab63ff]">2</span>Chat
+            Chat App
           </h1>
 
           {/* email */}
@@ -110,7 +109,7 @@ export default function LoginPage() {
               )}
             </button>
           </div>
-          <span>
+          <span className="text-black">
             Dont have an account?{" "}
             <Link
               href="/register"
