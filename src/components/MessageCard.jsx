@@ -1,12 +1,15 @@
 import moment from "moment";
 import Image from "next/image";
+
 export default function MessageCard({ message, me, other }) {
   const isMessageFromMe = message.senderId === me.id;
+
   function timeAgo(time) {
     const date = time?.toDate();
     const momentDate = moment(date);
     return momentDate.fromNow();
   }
+  console.log("message image is", message);
   return (
     <>
       <div
@@ -43,6 +46,13 @@ export default function MessageCard({ message, me, other }) {
             isMessageFromMe ? "bg-blue-500 self-end" : "bg-[#19D39E] self-start"
           }`}
         >
+          {message.image && (
+            <img
+              className="w-60 h-40  rounded-md"
+              src={message.image}
+              alt="message"
+            />
+          )}
           <p>{message.content}</p>
           <div className="text-xs text-gray-300">{timeAgo(message.time)}</div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 import MessageCard from "./MessageCard";
 import MessageInput from "./Messageinput";
+import MessageInput2 from "./Messageinput2";
 import { useState, useEffect, useRef } from "react";
 import { firestore } from "@/lib/firebase";
 import {
@@ -21,6 +22,7 @@ export default function ChatRoom({ user, selectedChatroom }) {
 
   const [message, setMessage] = useState("");
   const [messages, setmessages] = useState([]);
+  const [image, setImage] = useState(null);
   const messagesContainerRef = useRef(null);
 
   // retrieve messages
@@ -71,7 +73,7 @@ export default function ChatRoom({ user, selectedChatroom }) {
 
   async function sendMessage(e) {
     const messageCollection = collection(firestore, "messages");
-    if (message.trim() === "") {
+    if (message.trim() === "" && !image) {
       return;
     }
     try {
@@ -80,15 +82,18 @@ export default function ChatRoom({ user, selectedChatroom }) {
         senderId: me.id,
         content: message,
         time: serverTimestamp(),
-        image: "",
+        image: image,
         messageType: "text",
       };
       await addDoc(messageCollection, messageData);
       setMessage("");
+      setImage(null);
 
       // update chatroom last message
       const chatroomRef = doc(firestore, "chatrooms", chatRoomId);
-      await updateDoc(chatroomRef, { lastMessage: message });
+      await updateDoc(chatroomRef, {
+        lastMessage: message ? message : "Image",
+      });
     } catch (err) {
       console.log(err);
     }
@@ -114,6 +119,8 @@ export default function ChatRoom({ user, selectedChatroom }) {
           sendMessage={sendMessage}
           messae={message}
           setMessage={setMessage}
+          image={image}
+          setImage={setImage}
         />
       </div>
     </>
